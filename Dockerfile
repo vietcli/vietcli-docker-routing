@@ -1,6 +1,10 @@
 FROM ubuntu:16.04
 MAINTAINER Viet Duong<viet.duong@hotmail.com>
 
+# Compatible with :
+#    Ubuntu 16.04
+#    Nginx 1.15.x
+
 # Set one or more individual labels
 LABEL vietcli.docker.base.image.version="0.1.0-beta"
 LABEL vendor="[VietCLI] vietcli/docker-routing"
@@ -20,13 +24,21 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV HTTP_SERVER_NAME vietcli.local
 
 # Update apt-get
-RUN apt-get update
-RUN apt-get -y upgrade
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ABF5BD827BD9BF62 \
+    && echo 'deb http://nginx.org/packages/mainline/ubuntu/ xenial nginx' >> /etc/apt/sources.list.d/nginx.list \
+    && apt-get update \
+    && apt-get install locales \
+    && locale-gen en_US.UTF-8 \
+    && export LANG=en_US.UTF-8 \
+    && apt-get install -y software-properties-common \
+    && add-apt-repository -y ppa:ondrej/php \
+    && apt-get update \
+    && apt-get -y upgrade
 
 # Basic Requirements
 RUN apt-get update
 RUN apt-get -y install pwgen python-setuptools curl git nano sudo unzip openssh-server openssl
-RUN apt-get -y install nginx
+RUN apt-get -y install nginx=1.15.*
 
 # nginx config
 RUN sed -i -e"s/user\s*www-data;/user vietcli www-data;/" /etc/nginx/nginx.conf
