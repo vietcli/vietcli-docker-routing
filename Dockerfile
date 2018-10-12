@@ -38,12 +38,24 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ABF5BD827BD9BF62 \
 # Basic Requirements
 RUN apt-get update
 RUN apt-get -y install pwgen python-setuptools curl git nano sudo unzip openssh-server openssl
-RUN apt-get -y install nginx=1.15.*
+RUN apt-get -y install nginx
 
 # nginx config
 RUN sed -i -e"s/user\s*www-data;/user vietcli www-data;/" /etc/nginx/nginx.conf
 RUN sed -i -e"s/keepalive_timeout\s*65/keepalive_timeout 2/" /etc/nginx/nginx.conf
 RUN sed -i -e"s/keepalive_timeout 2/keepalive_timeout 2;\n\tclient_max_body_size 100m/" /etc/nginx/nginx.conf
+
+# Generate self-signed ssl cert
+RUN mkdir /etc/nginx/ssl/
+RUN openssl req \
+    -new \
+    -newkey rsa:4096 \
+    -days 365 \
+    -nodes \
+    -x509 \
+    -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" \
+    -keyout /etc/ssl/private/ssl-cert-snakeoil.key \
+    -out /etc/ssl/certs/ssl-cert-snakeoil.pem
 
 # nginx site conf
 # ADD ./nginx.default.conf /etc/nginx/conf.d/default.conf
